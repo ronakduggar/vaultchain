@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VaultChain Admin Console</title>
+  <!-- Google Fonts & Icon links -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Socket.io client -->
+  <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+  
+  <style>
+    :root {
+      --primary: #5B5FEF;
+      --secondary: #7B61FF;
+      --accent: #00E5FF;
+      --success: #22C55E;
+      --danger: #EF4444;
+      --warning: #F59E0B;
+      --bg: #0F172A;
+      --card-bg: rgba(30, 41, 59, 0.45);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(91, 95, 239, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(123, 97, 255, 0.12) 0%, transparent 40%);
+      background-attachment: fixed;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 2.5rem;
+      border-bottom: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      padding: 0.5rem;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(91, 95, 239, 0.3);
+    }
+
+    .logo-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(to right, #FFF, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.5px;
+    }
+
+    .server-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--success);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.6; }
+      50% { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.6; }
+    }
+
+    main {
+      padding: 2.5rem;
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .grid-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 1.75rem;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+    }
+
+    .stat-value {
+      font-size: 2.25rem;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-footer {
+      font-size: 0.8rem;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .grid-sections {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+    }
+
+    @media(max-width: 1024px) {
+      .grid-sections {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 0.75rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      padding: 1rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    td {
+      padding: 1.2rem 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 0.9rem;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .badge {
+      padding: 0.35rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .badge-success { background: rgba(34, 197, 94, 0.1); color: var(--success); }
+    .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+    .badge-primary { background: rgba(91, 95, 239, 0.1); color: var(--primary); }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .logs-container {
+      max-height: 480px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding-right: 0.5rem;
+    }
+
+    .log-item {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      border-radius: 14px;
+      padding: 1rem;
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .log-meta {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+
+    .log-action {
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* Scrollbar override */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .chart-container {
+      margin-top: 1.5rem;
+      height: 120px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .chart-bar {
+      flex: 1;
+      background: linear-gradient(to top, var(--primary), var(--secondary));
+      border-radius: 6px 6px 0 0;
+      transition: height 0.5s ease;
+      position: relative;
+    }
+
+    .chart-bar::after {
+      content: attr(data-val);
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .chart-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-container">
+      <div class="logo-icon">
+        <i data-lucide="shield-check" style="color: #FFF; width: 24px; height: 24px;"></i>
+      </div>
+      <div class="logo-text">VaultChain Admin</div>
+    </div>
+    <div class="server-status">
+      <div class="status-dot"></div>
+      <span id="api-status-label">Core API Connected</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Stats Cards -->
+    <div class="grid-stats">
+      <div class="card">
+        <div class="stat-header">
+          <span>Total Registered Vaults</span>
+          <i data-lucide="users" style="color: var(--primary)"></i>
+        </div>
+        <div class="stat-value" id="stat-total-users">0</div>
+        <div class="stat-footer">On-chain partitioned users</div>
+      </div>
+
+      <div class="card">
+        <div class="stat-header">
+          <span>Avg Security Audit Score</span>
+          <i data-lucide="award" style="color: var(--success)"></i>
+        </div>
+        <div class="stat-value" id="stat-avg-score">0%</div>
+        <div class="stat-footer" style="color: var(--success)">Enterprise Standard</div>
+      </div>
+
+      <div class="card">
+        <div class="stat-header">
+          <span>Decentralized Transacts</span>
+          <i data-lucide="database" style="color: var(--secondary)"></i>
+        </div>
+        <div class="stat-value" id="stat-total-tx">0</div>
+        <div class="stat-footer" style="color: var(--secondary)">Write ops verified on contract</div>
+      </div>
+
+      <div class="card">
+        <div class="stat-header">
+          <span>IPFS Encrypted Storage</span>
+          <i data-lucide="server" style="color: var(--accent)"></i>
+        </div>
+        <div class="stat-value" id="stat-total-storage">0 KB</div>
+        <div class="stat-footer" style="color: var(--accent)">Decentralized CIDs</div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="grid-sections">
+      <!-- Users Table Section -->
+      <div class="card" style="overflow-x: auto;">
+        <h2><i data-lucide="shield"></i> Active User Registries</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Linked Wallet</th>
+              <th>Score</th>
+              <th>Registration Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body">
+            <tr>
+              <td colspan="7" style="text-align: center; color: var(--text-muted);">Loading registry data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Realtime Audit Stream -->
+      <div class="card">
+        <h2><i data-lucide="activity"></i> Security Audit Logs</h2>
+        <div class="logs-container" id="logs-container">
+          <div style="text-align: center; padding: 2rem; color: var(--text-muted);">Awaiting telemetry feed...</div>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+          <h3 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">On-chain transaction scale</h3>
+          <div class="chart-container" id="chart-container">
+            <!-- Simulated chart bars -->
+            <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; height:100%;">
+              <div class="chart-bar" style="height: 40%;" data-val="12"></div>
+              <div class="chart-label">Store</div>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; height:100%;">
+              <div class="chart-bar" style="height: 75%;" data-val="28" style="background: var(--accent);"></div>
+              <div class="chart-label">Update</div>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; height:100%;">
+              <div class="chart-bar" style="height: 15%;" data-val="4"></div>
+              <div class="chart-label">Delete</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = "http://localhost:5000/api";
+    
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Fetch Stats
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API_URL}/admin/stats`);
+        const stats = await res.json();
+        document.getElementById("stat-total-users").textContent = stats.totalUsers || 0;
+        document.getElementById("stat-avg-score").textContent = (stats.avgSecurityScore || 100) + "%";
+        document.getElementById("stat-total-tx").textContent = stats.totalTransactions || 0;
+        
+        const storageKb = ((stats.totalStorageBytes || 0) / 1024).toFixed(2);
+        document.getElementById("stat-total-storage").textContent = storageKb + " KB";
+      } catch (err) {
+        console.error("Error loading stats:", err);
+      }
+    }
+
+    // Fetch Users list
+    async function loadUsers() {
+      try {
+        const res = await fetch(`${API_URL}/admin/users`);
+        const users = await res.json();
+        const tbody = document.getElementById("users-table-body");
+        tbody.innerHTML = "";
+        
+        if (users.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No users found.</td></tr>`;
+          return;
+        }
+
+        users.forEach(user => {
+          const formattedDate = new Date(user.createdAt).toLocaleDateString(undefined, {
+            month: 'short', day: 'numeric', year: 'numeric'
+          });
+          const scoreColor = user.securityScore >= 80 ? 'var(--success)' : (user.securityScore >= 50 ? 'var(--warning)' : 'var(--danger)');
+          const walletText = user.walletAddress ? `${user.walletAddress.slice(0,6)}...${user.walletAddress.slice(-4)}` : "None";
+          const statusBadge = user.isActive 
+            ? `<span class="badge badge-success">Active</span>`
+            : `<span class="badge badge-danger">Disabled</span>`;
+          const btnText = user.isActive ? "Deactivate" : "Activate";
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td style="font-weight:600;">${user.name}</td>
+            <td style="color:var(--text-muted);">${user.email}</td>
+            <td style="font-family:monospace; color:var(--accent);">${walletText}</td>
+            <td style="font-weight:700; color:${scoreColor};">${user.securityScore}%</td>
+            <td>${formattedDate}</td>
+            <td>${statusBadge}</td>
+            <td>
+              <button class="btn btn-action" onclick="toggleUserStatus('${user._id}')">${btnText}</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("Error loading users:", err);
+      }
+    }
+
+    // Toggle User Status
+    async function toggleUserStatus(id) {
+      try {
+        const res = await fetch(`${API_URL}/admin/toggle-status/${id}`, { method: "POST" });
+        if (res.ok) {
+          loadUsers();
+          loadStats();
+        }
+      } catch (err) {
+        console.error("Error toggling user status:", err);
+      }
+    }
+
+    // Fetch Logs
+    async function loadLogs() {
+      try {
+        const res = await fetch(`${API_URL}/admin/logs`);
+        const logs = await res.json();
+        const container = document.getElementById("logs-container");
+        container.innerHTML = "";
+
+        if (logs.length === 0) {
+          container.innerHTML = `<div style="text-align: center; padding: 2rem; color: var(--text-muted);">No activity logs.</div>`;
+          return;
+        }
+
+        logs.forEach(log => {
+          const div = document.createElement("div");
+          div.className = "log-item";
+          
+          const time = new Date(log.createdAt).toLocaleTimeString();
+          const badgeClass = log.status === "SUCCESS" ? "badge-success" : "badge-danger";
+
+          div.innerHTML = `
+            <div class="log-meta">
+              <span>${time} - ${log.email || "Unknown User"}</span>
+              <span class="badge ${badgeClass}">${log.status}</span>
+            </div>
+            <div>
+              <span class="log-action">${log.action}</span> - 
+              <span style="color:var(--text-muted);">${log.details || "No details provided"}</span>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      } catch (err) {
+        console.error("Error loading logs:", err);
+      }
+    }
+
+    // Initial load
+    async function init() {
+      await loadStats();
+      await loadUsers();
+      await loadLogs();
+    }
+
+    init();
+
+    // Socket.io for Realtime Audit updates
+    try {
+      const socket = io("http://localhost:5000");
+      socket.on("connect", () => {
+        console.log("Connected to Realtime Events Feed");
+      });
+      socket.on("admin_alert", (alertData) => {
+        // Triggered by app actions
+        loadStats();
+        loadUsers();
+        loadLogs();
+      });
+    } catch (err) {
+      console.warn("Real-time websocket disconnected. Falling back to HTTP polling.");
+    }
+  </script>
+</body>
+</html>
