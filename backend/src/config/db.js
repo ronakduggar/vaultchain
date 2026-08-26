@@ -1,8 +1,9 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/vaultchain";
+    const mongoURI = process.env.MONGODB_URI || process.env.MONGO_URI;
+    if (!mongoURI) throw new Error("MONGODB_URI or MONGO_URI is required");
     await mongoose.connect(mongoURI);
     console.log("MongoDB Connected Successfully to:", mongoURI);
   } catch (err) {
@@ -11,4 +12,4 @@ const connectDB = async () => {
   }
 };
 
-module.exports = connectDB;
+export default connectDB;

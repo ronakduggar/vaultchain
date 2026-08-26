@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const SecurityLogSchema = new mongoose.Schema(
   {
@@ -16,7 +16,15 @@ const SecurityLogSchema = new mongoose.Schema(
       required: true,
       enum: [
         "USER_LOGIN",
+        "USER_LOGOUT",
         "USER_REGISTER",
+        "USER_PASSWORD_RESET_REQUEST",
+        "USER_PASSWORD_RESET",
+        "ADMIN_LOGIN",
+        "ADMIN_LOGOUT",
+        "ADMIN_REGISTER",
+        "ADMIN_PASSWORD_RESET_REQUEST",
+        "ADMIN_PASSWORD_RESET",
         "PASSWORD_ADD",
         "PASSWORD_UPDATE",
         "PASSWORD_DELETE",
@@ -48,4 +56,4 @@ const SecurityLogSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("SecurityLog", SecurityLogSchema);
+export default mongoose.model("SecurityLog", SecurityLogSchema);

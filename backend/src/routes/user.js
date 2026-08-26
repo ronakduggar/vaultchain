@@ -1,8 +1,9 @@
-const express = require("express");
+import express from "express";
+import User from "../models/User.js";
+import SecurityLog from "../models/SecurityLog.js";
+import { authMiddleware } from "../middleware/auth.js";
+
 const router = express.Router();
-const User = require("../models/User");
-const SecurityLog = require("../models/SecurityLog");
-const { authMiddleware } = require("./auth");
 
 // 1. GET PROFILE & METRICS
 router.get("/profile", authMiddleware, async (req, res) => {
@@ -85,4 +86,4 @@ router.get("/logs", authMiddleware, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

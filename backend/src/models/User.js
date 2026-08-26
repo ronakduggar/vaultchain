@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema(
   {
@@ -14,14 +14,12 @@ const UserSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-    loginHash: {
+    passwordHash: {
       type: String,
       required: true,
+      select: false, // ✅ hide by default
     },
-    salt: {
-      type: String,
-      required: true,
-    },
+    // ❌ removed loginHash and salt – no longer needed
     pinHash: {
       type: String,
       default: "",
@@ -36,7 +34,7 @@ const UserSchema = new mongoose.Schema(
     },
     securityScore: {
       type: Number,
-      default: 100, // 0 to 100
+      default: 100,
     },
     storageUsedBytes: {
       type: Number,
@@ -46,8 +44,18 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    passwordResetTokenHash: {
+      type: String,
+      default: null,
+      select: false,
+    },
+    passwordResetExpiresAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("User", UserSchema);
+export default mongoose.model("User", UserSchema);

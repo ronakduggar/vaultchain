@@ -1,26 +1,36 @@
-require("dotenv").config();
-const express = require("express");
-const http = require("http");
-const cors = require("cors");
-const socketIo = require("socket.io");
-const connectDB = require("./config/db");
+import "dotenv/config";
+import express from "express";
+import http from "http";                     // ✅ imported http
+import cors from "cors";
+import { Server as SocketServer } from "socket.io";
+import connectDB from "./config/db.js";
+import { connectRedis } from "./config/redis.js";
 
-const { router: authRouter } = require("./routes/auth");
-const transactionRouter = require("./routes/transaction");
-const userRouter = require("./routes/user");
-const adminRouter = require("./routes/admin");
+import authRouter from "./routes/auth.js";
+import transactionRouter from "./routes/transaction.js";
+import userRouter from "./routes/user.js";
+import adminRouter from "./routes/admin.js";
 
 const app = express();
+
+// ✅ Create HTTP server explicitly
 const server = http.createServer(app);
-const io = socketIo(server, {
+
+// ✅ Attach Socket.io to the server (NOT to app.listen)
+const io = new SocketServer(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
+    origin: process.env.CORS_ORIGIN || "http://localhost:3000", // fallback
+    credentials: true,
   },
 });
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Routes
@@ -37,9 +47,8 @@ app.get("/health", (req, res) => {
 // Real-time communication via Socket.io
 io.on("connection", (socket) => {
   console.log("Client connected to socket.io:", socket.id);
-  
+
   socket.on("security_alert", (data) => {
-    // Broadcast security incidents to admin dashboard clients
     io.emit("admin_alert", data);
   });
 
@@ -48,12 +57,24 @@ io.on("connection", (socket) => {
   });
 });
 
-// Connect to MongoDB & Start Server
-const PORT = process.env.PORT || 5000;
-connectDB().then(() => {
-  server.listen(PORT, () => {
-    console.log(`VaultChain Core API running on port ${PORT}`);
-  });
-});
+// ✅ Validate required env vars before starting
+if (!process.env.JWT_SECRET) {
+  console.error("FATAL: JWT_SECRET is not defined in environment");
+  process.exit(1);
+}
 
-module.exports = { app, server, io };
+// Connect to MongoDB & Redis, then start server
+const PORT = process.env.PORT || 5000;
+Promise.all([connectDB(), connectRedis()])
+  .then(() => {
+    // ✅ Use server.listen instead of app.listen
+    server.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Failed to start server:", err);
+    process.exit(1);
+  });
+
+export { app, io };
