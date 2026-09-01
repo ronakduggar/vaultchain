@@ -1,83 +1,105 @@
-const express = require("express");
+import express from "express";
+import User from "../models/User.js";
+import SecurityLog from "../models/SecurityLog.js";
+import Transaction from "../models/Transaction.js";
+import { adminMiddleware } from "../middleware/auth.js";
+
 const router = express.Router();
-const User = require("../models/User");
-const SecurityLog = require("../models/SecurityLog");
-const Transaction = require("../models/Transaction");
+router.use(adminMiddleware);
 
-// 1. GET SYSTEM ANALYTICS & STATS
+// 1. GET ADMIN STATISTICS
 router.get("/stats", async (req, res) => {
-  try {
-    const totalUsers = await User.countDocuments();
-    const activeUsers = await User.countDocuments({ isActive: true });
-    const totalTx = await Transaction.countDocuments();
-    
-    // Average Security Score
-    const scoreAgg = await User.aggregate([
-      { $group: { _id: null, avgScore: { $avg: "$securityScore" } } }
-    ]);
-    const avgSecurityScore = scoreAgg.length > 0 ? Math.round(scoreAgg[0].avgScore) : 100;
+    try {
+        const totalUsers = await User.countDocuments({ isActive: true });
+        const totalTransactions = await Transaction.countDocuments();
 
-    // Total Storage Used
-    const storageAgg = await User.aggregate([
-      { $group: { _id: null, totalBytes: { $sum: "$storageUsedBytes" } } }
-    ]);
-    const totalStorageBytes = storageAgg.length > 0 ? storageAgg[0].totalBytes : 0;
+        const users = await User.find().select("securityScore storageUsedBytes");
+        const avgSecurityScore = users.length > 0
+            ? Math.round(users.reduce((sum, u) => sum + (u.securityScore || 100), 0) / users.length)
+            : 100;
 
-    // Category Distribution Mock (for admin charts)
-    const transactionTypeStats = await Transaction.aggregate([
-      { $group: { _id: "$actionType", count: { $sum: 1 } } }
-    ]);
+        const totalStorageBytes = users.reduce((sum, u) => sum + (u.storageUsedBytes || 0), 0);
 
-    res.json({
-      totalUsers,
-      activeUsers,
-      totalTransactions: totalTx,
-      avgSecurityScore,
-      totalStorageBytes,
-      txTypes: transactionTypeStats,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+        res.json({
+            totalUsers,
+            totalTransactions,
+            avgSecurityScore,
+            totalStorageBytes,
+            timestamp: new Date(),
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
 });
 
-// 2. GET ALL USERS LIST
+// 2. GET ALL USERS
 router.get("/users", async (req, res) => {
-  try {
-    const users = await User.find().select("-loginHash -pinHash").sort({ createdAt: -1 });
-    res.json(users);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+    try {
+        const users = await User.find().select("-passwordHash -pinHash");
+        res.json(users);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
 });
 
-// 3. GET SYSTEM SECURITY LOGS
-router.get("/logs", async (req, res) => {
-  try {
-    const logs = await SecurityLog.find().sort({ createdAt: -1 }).limit(50);
-    res.json(logs);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// 4. ACTIVATE / DEACTIVATE USER
+// 3. TOGGLE USER ACTIVE STATUS
 router.post("/toggle-status/:id", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
 
-    user.isActive = !user.isActive;
-    await user.save();
+        user.isActive = !user.isActive;
+        await user.save();
 
-    res.json({ message: `User status toggled to ${user.isActive}`, user });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+        await SecurityLog.create({
+            userId: user._id,
+            email: user.email,
+            action: "ADMIN_TOGGLE_USER_STATUS",
+            status: "SUCCESS",
+            details: `User status toggled to ${user.isActive ? "active" : "inactive"}`,
+        });
+
+        res.json({ message: "User status updated", isActive: user.isActive });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
 });
 
-module.exports = router;
+// 4. GET SECURITY LOGS
+router.get("/logs", async (req, res) => {
+    try {
+        const logs = await SecurityLog.find().sort({ createdAt: -1 }).limit(50);
+        res.json(logs);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// 5. GET USER DETAILS
+router.get("/users/:id", async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select("-passwordHash -pinHash");
+        if (!user) return res.status(404).json({ message: "User not found" });
+        res.json(user);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// 6. GET USER TRANSACTIONS
+router.get("/users/:id/transactions", async (req, res) => {
+    try {
+        const transactions = await Transaction.find({ userId: req.params.id }).sort({ createdAt: -1 });
+        res.json(transactions);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+export default router;

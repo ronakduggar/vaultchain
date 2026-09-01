@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +8,14 @@
   <!-- Google Fonts & Icon links -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Socket.io client -->
   <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
-  
+
   <style>
     :root {
       --primary: #5B5FEF;
@@ -40,7 +43,7 @@
       color: var(--text);
       overflow-x: hidden;
       min-height: 100vh;
-      background-image: 
+      background-image:
         radial-gradient(circle at 10% 20%, rgba(91, 95, 239, 0.15) 0%, transparent 40%),
         radial-gradient(circle at 90% 80%, rgba(123, 97, 255, 0.12) 0%, transparent 40%);
       background-attachment: fixed;
@@ -52,10 +55,17 @@
       align-items: center;
       padding: 1.5rem 2.5rem;
       border-bottom: 1px solid var(--card-border);
+      -webkit-backdrop-filter: blur(12px);
       backdrop-filter: blur(12px);
       position: sticky;
       top: 0;
       z-index: 100;
+    }
+
+    .logo-icon i {
+      color: #FFF;
+      width: 24px;
+      height: 24px;
     }
 
     .logo-container {
@@ -106,9 +116,20 @@
     }
 
     @keyframes pulse {
-      0% { transform: scale(0.9); opacity: 0.6; }
-      50% { transform: scale(1.15); opacity: 1; }
-      100% { transform: scale(0.9); opacity: 0.6; }
+      0% {
+        transform: scale(0.9);
+        opacity: 0.6;
+      }
+
+      50% {
+        transform: scale(1.15);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(0.9);
+        opacity: 0.6;
+      }
     }
 
     main {
@@ -131,10 +152,15 @@
       border: 1px solid var(--card-border);
       border-radius: 24px;
       padding: 1.75rem;
-      backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
       transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .center-text {
+      text-align: center;
+      color: var(--text-muted);
     }
 
     .card:hover {
@@ -184,7 +210,7 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       padding-bottom: 0.75rem;
     }
 
@@ -199,12 +225,12 @@
       color: var(--text-muted);
       font-size: 0.85rem;
       font-weight: 600;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     td {
       padding: 1.2rem 1rem;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
       font-size: 0.9rem;
     }
 
@@ -220,9 +246,20 @@
       display: inline-block;
     }
 
-    .badge-success { background: rgba(34, 197, 94, 0.1); color: var(--success); }
-    .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-    .badge-primary { background: rgba(91, 95, 239, 0.1); color: var(--primary); }
+    .badge-success {
+      background: rgba(34, 197, 94, 0.1);
+      color: var(--success);
+    }
+
+    .badge-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+    }
+
+    .badge-primary {
+      background: rgba(91, 95, 239, 0.1);
+      color: var(--primary);
+    }
 
     .btn {
       padding: 0.5rem 1rem;
@@ -281,13 +318,16 @@
     ::-webkit-scrollbar {
       width: 6px;
     }
+
     ::-webkit-scrollbar-track {
       background: transparent;
     }
+
     ::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.1);
       border-radius: 10px;
     }
+
     ::-webkit-scrollbar-thumb:hover {
       background: rgba(255, 255, 255, 0.2);
     }
@@ -326,12 +366,13 @@
     }
   </style>
 </head>
+
 <body>
 
   <header>
     <div class="logo-container">
       <div class="logo-icon">
-        <i data-lucide="shield-check" style="color: #FFF; width: 24px; height: 24px;"></i>
+        <i data-lucide="shield-check"></i>
       </div>
       <div class="logo-text">VaultChain Admin</div>
     </div>
@@ -400,7 +441,7 @@
           </thead>
           <tbody id="users-table-body">
             <tr>
-              <td colspan="7" style="text-align: center; color: var(--text-muted);">Loading registry data...</td>
+              <td colspan="7" class="center-text">Loading registry data...</td>
             </tr>
           </tbody>
         </table>
@@ -414,7 +455,8 @@
         </div>
 
         <div style="margin-top: 1.5rem;">
-          <h3 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">On-chain transaction scale</h3>
+          <h3 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">On-chain transaction scale
+          </h3>
           <div class="chart-container" id="chart-container">
             <!-- Simulated chart bars -->
             <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; height:100%;">
@@ -437,7 +479,7 @@
 
   <script>
     const API_URL = "http://localhost:5000/api";
-    
+
     // Initialize Lucide Icons
     lucide.createIcons();
 
@@ -449,7 +491,7 @@
         document.getElementById("stat-total-users").textContent = stats.totalUsers || 0;
         document.getElementById("stat-avg-score").textContent = (stats.avgSecurityScore || 100) + "%";
         document.getElementById("stat-total-tx").textContent = stats.totalTransactions || 0;
-        
+
         const storageKb = ((stats.totalStorageBytes || 0) / 1024).toFixed(2);
         document.getElementById("stat-total-storage").textContent = storageKb + " KB";
       } catch (err) {
@@ -464,7 +506,7 @@
         const users = await res.json();
         const tbody = document.getElementById("users-table-body");
         tbody.innerHTML = "";
-        
+
         if (users.length === 0) {
           tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No users found.</td></tr>`;
           return;
@@ -475,8 +517,8 @@
             month: 'short', day: 'numeric', year: 'numeric'
           });
           const scoreColor = user.securityScore >= 80 ? 'var(--success)' : (user.securityScore >= 50 ? 'var(--warning)' : 'var(--danger)');
-          const walletText = user.walletAddress ? `${user.walletAddress.slice(0,6)}...${user.walletAddress.slice(-4)}` : "None";
-          const statusBadge = user.isActive 
+          const walletText = user.walletAddress ? `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}` : "None";
+          const statusBadge = user.isActive
             ? `<span class="badge badge-success">Active</span>`
             : `<span class="badge badge-danger">Disabled</span>`;
           const btnText = user.isActive ? "Deactivate" : "Activate";
@@ -529,7 +571,7 @@
         logs.forEach(log => {
           const div = document.createElement("div");
           div.className = "log-item";
-          
+
           const time = new Date(log.createdAt).toLocaleTimeString();
           const badgeClass = log.status === "SUCCESS" ? "badge-success" : "badge-danger";
 
@@ -576,4 +618,5 @@
     }
   </script>
 </body>
+
 </html>

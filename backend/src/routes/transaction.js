@@ -1,9 +1,10 @@
-const express = require("express");
+import express from "express";
+import Transaction from "../models/Transaction.js";
+import { authMiddleware } from "../middleware/auth.js";
+import SecurityLog from "../models/SecurityLog.js";
+import User from "../models/User.js";
+
 const router = express.Router();
-const Transaction = require("../models/Transaction");
-const { authMiddleware } = require("./auth");
-const SecurityLog = require("../models/SecurityLog");
-const User = require("../models/User");
 
 // 1. LOG BLOCKCHAIN TRANSACTION
 router.post("/log", authMiddleware, async (req, res) => {
@@ -62,4 +63,4 @@ router.get("/history", authMiddleware, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
