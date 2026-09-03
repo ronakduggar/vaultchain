@@ -79,4 +79,4 @@ npm start
 ```
 
 ---
-*Created with ♥ by Advanced Agentic Coding.*
+
