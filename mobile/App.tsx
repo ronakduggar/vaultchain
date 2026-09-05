@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, StatusBar } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, StatusBar, Platform } from "react-native";
 import { Provider, useSelector, useDispatch } from "react-redux";
 import store, { RootState } from "./src/redux/store";
 import { colors, layout } from "./src/theme/theme";
@@ -133,8 +133,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backdropFilter: "blur(20px)",
     height: 70,
+    ...(Platform.OS === "web" ? { backdropFilter: "blur(20px)" } as any : {}),
     justifyContent: "space-around",
     alignItems: "center",
   },

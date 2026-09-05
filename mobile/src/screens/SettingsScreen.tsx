@@ -112,7 +112,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
             <Text style={styles.settingLabel}>Aesthetics Theme Mode (Dark)</Text>
             <Switch
               value={themeMode === "dark"}
-              onValueChange={() => dispatch(toggleTheme())}
+              onValueChange={() => {
+                dispatch(toggleTheme());
+              }}
               trackColor={{ false: "#1E293B", true: colors.dark.primary }}
             />
           </View>

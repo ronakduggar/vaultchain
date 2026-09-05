@@ -16,10 +16,18 @@ const UserSchema = new mongoose.Schema(
     },
     passwordHash: {
       type: String,
-      required: true,
+      default: "",
       select: false, // ✅ hide by default
     },
-    // ❌ removed loginHash and salt – no longer needed
+    loginHash: {
+      type: String,
+      default: "",
+      select: false,
+    },
+    salt: {
+      type: String,
+      default: "",
+    },
     pinHash: {
       type: String,
       default: "",
