@@ -478,7 +478,7 @@
   </main>
 
   <script>
-    const API_URL = "http://localhost:5000/api";
+    const API_URL = "http://localhost:5002/api";
 
     // Initialize Lucide Icons
     lucide.createIcons();
@@ -603,7 +603,7 @@
 
     // Socket.io for Realtime Audit updates
     try {
-      const socket = io("http://localhost:5000");
+      const socket = io("http://localhost:5002");
       socket.on("connect", () => {
         console.log("Connected to Realtime Events Feed");
       });

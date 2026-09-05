@@ -1,3 +1,5 @@
+import { describe, it } from "node:test";
+import assert from "node:assert";
 import { deriveMasterKey, encryptLocal, decryptLocal, hashSHA256 } from "./encryption";
 
 describe("Cryptographic Utilities", () => {
@@ -13,9 +15,9 @@ describe("Cryptographic Utilities", () => {
     const key1 = deriveMasterKey(masterPassword, salt);
     const key2 = deriveMasterKey(masterPassword, salt);
 
-    expect(key1).toBeDefined();
-    expect(key1.length).toBe(64); // Hex representation of 256-bit (32 bytes) key
-    expect(key1).toBe(key2);
+    assert.ok(key1);
+    assert.strictEqual(key1.length, 64); // Hex representation of 256-bit (32 bytes) key
+    assert.strictEqual(key1, key2);
   });
 
   it("should derive a different key for a different password or salt", () => {
@@ -23,23 +25,23 @@ describe("Cryptographic Utilities", () => {
     const key2 = deriveMasterKey("wrongPassword", salt);
     const key3 = deriveMasterKey(masterPassword, "different-salt");
 
-    expect(key1).not.toBe(key2);
-    expect(key1).not.toBe(key3);
+    assert.notStrictEqual(key1, key2);
+    assert.notStrictEqual(key1, key3);
   });
 
   it("should encrypt and successfully decrypt the data", () => {
     const key = deriveMasterKey(masterPassword, salt);
     const encryptedPayload = encryptLocal(plainData, key);
 
-    expect(encryptedPayload).toBeDefined();
+    assert.ok(encryptedPayload);
     const parsed = JSON.parse(encryptedPayload);
-    expect(parsed.ciphertext).toBeDefined();
-    expect(parsed.iv).toBeDefined();
+    assert.ok(parsed.ciphertext);
+    assert.ok(parsed.iv);
 
     const decryptedData = decryptLocal(encryptedPayload, key);
-    expect(decryptedData).toBe(plainData);
+    assert.strictEqual(decryptedData, plainData);
     const parsedDecrypted = JSON.parse(decryptedData);
-    expect(parsedDecrypted.password).toBe("mySecretGooglePassword");
+    assert.strictEqual(parsedDecrypted.password, "mySecretGooglePassword");
   });
 
   it("should fail to decrypt if an incorrect key is provided", () => {
@@ -48,14 +50,14 @@ describe("Cryptographic Utilities", () => {
 
     const encryptedPayload = encryptLocal(plainData, correctKey);
 
-    expect(() => {
+    assert.throws(() => {
       decryptLocal(encryptedPayload, wrongKey);
-    }).toThrow();
+    });
   });
 
   it("should hash a string with SHA-256 and return consistent hex", () => {
     const str = "hello";
     const hash = hashSHA256(str);
-    expect(hash).toBe("2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824");
+    assert.strictEqual(hash, "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824");
   });
 });

@@ -19,7 +19,7 @@ const server = http.createServer(app);
 // ✅ Attach Socket.io to the server (NOT to app.listen)
 const io = new SocketServer(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000", // fallback
+    origin: true,
     credentials: true,
   },
 });
@@ -27,7 +27,7 @@ const io = new SocketServer(server, {
 // Middleware
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin: true,
     credentials: true,
   })
 );

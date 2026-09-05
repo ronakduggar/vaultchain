@@ -5,7 +5,8 @@
     "start": "node scripts/expo-start.cjs start",
     "android": "node scripts/expo-start.cjs start --android",
     "ios": "node scripts/expo-start.cjs start --ios",
-    "web": "node scripts/expo-start.cjs start --web"
+    "web": "node scripts/expo-start.cjs start --web",
+    "test": "npx tsx --test src/utils/encryption.test.ts"
   },
   "dependencies": {
     "@expo/metro-runtime": "~3.1.3",

@@ -16,7 +16,7 @@ import { RootState } from "../redux/store";
 import { colors, layout } from "../theme/theme";
 import { addVaultItem } from "../redux/vaultSlice";
 import { encryptLocal } from "../utils/encryption";
-import { uploadToIPFS } from "../ipfsService";
+import { uploadToIPFS } from "../services/ipfsService";
 import { storeRecordOnChain } from "../services/ethersService";
 import api from "../services/apiService";
 

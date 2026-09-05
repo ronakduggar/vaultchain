@@ -14,7 +14,7 @@ import { RootState } from "../redux/store";
 import { colors, layout } from "../theme/theme";
 import { VaultItem } from "../redux/vaultSlice";
 import { decryptLocal, hashSHA256 } from "../utils/encryption";
-import { fetchFromIPFS } from "../ipfsService";
+import { fetchFromIPFS } from "../services/ipfsService";
 
 interface PasswordDetailsScreenProps {
   item: VaultItem;
